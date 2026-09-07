@@ -19,7 +19,7 @@ While 46 automated test suites currently pass (53 `.src` files: 46 runnable, 7 r
 - **C-04 (P0)**: Function parameter covariance accepts incompatible function-pointer assignments without adapter thunks.
 - **C-05 (P0)**: Virtual method overrides are called through casted C function pointers with mismatched receiver signatures, invoking C undefined behavior.
 - **C-06 (P0)**: `this = null` is permitted by semantic analysis while codegen deliberately skips null checks on `this`.
-- **P1 Findings**: H-01 (non-void functions need not return), H-02 (`setjmp`/`longjmp` modified locals may be clobbered), H-03 (source inherits C signed overflow and div-by-zero UB), H-04 (negative/overflowing array allocation lengths), H-05 (`void` variables and unsupported storage types pass validation), H-06 (multiple constructors parsed but emitted with identical C names), H-07 (unmangled user identifiers colliding with C keywords), H-08 (array index expressions evaluated twice), H-09 (duplicate local/parameter/member symbols allowed), H-10/H-11 (member resolution order mismatch and inherited function fields), H-12 (implicit class upcasts not lowered consistently).
+- **P1 Findings**: H-01 (non-void functions need not return), H-02 (`setjmp`/`longjmp` modified locals may be clobbered), H-03 (source inherits C signed overflow and div-by-zero UB; explicitly includes unary negation overflow `-INT_MIN`), H-04 (negative/overflowing array allocation lengths), H-05 (`void` variables and unsupported storage types pass validation), H-06 (multiple constructors parsed but emitted with identical C names), H-07 (unmangled user identifiers colliding with C keywords, generated names, and runtime symbols), H-08 (multi-expression constructs — binary operands, call arguments, method receivers, constructor arguments, array receiver/index — evaluated in C-defined order; array index expressions may be evaluated twice), H-09 (duplicate local/parameter/member symbols allowed), H-10/H-11 (member resolution order mismatch and inherited function fields), H-12 (implicit class upcasts not lowered consistently).
 - **M-01 through M-05**: Generated C is GNU C11 rather than ANSI C; string escape decoding is delegated to C; exception state is global and single-threaded; `codegen.py` independently reinfers types; and the compiler driver previously lacked warning/optimization flags.
 
 ---
@@ -156,13 +156,13 @@ Each typed node will carry:
 
 - **Target Standard**: GNU C11 (utilizing `__extension__({ ... })` and flexible array members).
 - **Type inference**: `codegen.py` independently re-infers expression types via `infer_type()` rather than consuming resolved types from the semantic phase. H-10, M-04 OPEN.
-- **Evaluation order**: Expressions inherit the target C compiler's evaluation order. Array index expressions may be evaluated twice. H-08 OPEN.
+- **Evaluation order**: Multi-expression constructs (binary operands, call arguments, method receivers/arguments, constructor arguments, array receiver/index, and other multi-expression lowering contexts) inherit the target C compiler's evaluation order. Array index expressions may be evaluated twice. Source-defined left-to-right ordering and exactly-once evaluation are **not currently implemented**. H-08 OPEN.
 - **Implicit class upcasts**: Not consistently lowered through explicit `(Base*)` casts across all contexts. H-12 OPEN.
 - **Compiler driver**: `gcc <tmp.c> -lgc -o <binary>` — no `-O2`, no `-std=gnu11` flags in the driver script.
 
 ### Target Backend State — v0.1
 
-- **Evaluation Order**: Deterministic left-to-right expression lowering. Array indexing evaluates receiver and index once into temporaries.
+- **Evaluation Order**: Deterministic left-to-right expression lowering for all multi-expression constructs (binary operands, call arguments, method receiver then arguments, constructor arguments, array receiver/index, and other lowering contexts). Every sub-expression is evaluated exactly once through unique compiler temporaries (`gensym`).
 - **Temporary Generation**: Unique compiler-generated temporaries (`gensym`).
 - **Implicit Upcasts**: All resolved class upcasts lowered through explicit C pointer casts `(Base*)`.
 - **No type re-inference**: Codegen consumes resolved, typed semantic information only.
@@ -237,10 +237,11 @@ Target lowering example:
 | VTable calls use exact-signature thunks (no C UB) | **NOT MET** (C-05 open) | PASS | Generated C code review + UBSan test pass |
 | Non-void functions return/throw on all paths | **NOT MET** (H-01 open) | PASS | `bad_missing_return.src`, `bad_partial_return.src` |
 | Array allocation rejects negative/overflow lengths | **NOT MET** (H-04 open) | PASS | `test_negative_array_size.src`, `test_huge_array_size.src` |
-| Array indexing evaluates index expressions exactly once | **NOT MET** (H-08 open) | PASS | `test_index_eval_once.src` |
-| Integer arithmetic avoids target C UB (div/mod-by-zero, INT_MIN / -1, signed overflow) | **NOT MET** (H-03 open) | PASS | `test_div_zero.src`, `test_int_overflow.src` |
+| Multi-expression constructs evaluate left-to-right, exactly once (binary, calls, receivers, constructors, array receiver/index) | **NOT MET** (H-08 open) | PASS | `test_binary_eval_order.src`, `test_function_arg_eval_order.src`, `test_method_eval_order.src`, `test_constructor_arg_eval_order.src`, `test_index_eval_once.src` |
+| Integer arithmetic avoids target C UB (signed addition/subtraction/multiplication overflow, unary negation overflow `-INT_MIN`, div/mod-by-zero, `INT_MIN / -1`, `INT_MIN % -1`) | **NOT MET** (H-03 open) | PASS | `test_int_add_overflow.src`, `test_int_sub_overflow.src`, `test_int_mul_overflow.src`, `test_int_neg_overflow.src`, `test_int_div_zero.src`, `test_int_mod_zero.src`, `test_int_min_div_neg1.src` |
 | Implicit class upcasts emit explicit C pointer conversions | **NOT MET** (H-12 open) | PASS | `test_implicit_upcast.src` |
 | Backend does not repeat semantic name resolution | **NOT MET** (H-10, M-04 open) | PASS | Architecture & code review |
+| Accepted source identifiers do not collide with C keywords, reserved identifiers, or compiler-generated/runtime symbols (`RAW USER C SYMBOLS = NO`) | **NOT MET** (H-07 open) | PASS | `bad_symbol_c_keyword.src`, `bad_symbol_vptr.src`, `bad_symbol_base.src`, `bad_symbol_runtime_helper.src`, `bad_symbol_generated_ctor.src` |
 
 ---
 
