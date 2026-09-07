@@ -35,7 +35,9 @@
 - [ ] Implement symbol mangling for user identifiers colliding with C keywords (H-07)
 - [ ] Align member resolution order between TypeChecker and CodeGenerator (H-10, H-11)
 - [ ] Emit consistent implicit upcasts for class arguments and returns (H-12)
+- [ ] Reject contextually invalid types and unsupported storage forms, including `void` variables, fields, parameters where forbidden, `void[]`, and unsupported function-array/storage forms (H-05)
 - [ ] Add regression tests: bad_missing_return.src, bad_partial_return.src, test_negative_array_size.src, test_huge_array_size.src, test_index_eval_once.src, test_setjmp_modified_local.src
+- [ ] Add regression tests: bad_void_variable.src, bad_void_field.src, bad_void_array.src, bad_void_param.src
 
 ---
 

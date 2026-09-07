@@ -31,7 +31,8 @@ You are the **polish agent** for a compiler/language-tooling project.
 
 ## 2. Environment
 
-- **Working directory:** `/home/rockson/Project/ROCKSON`
+- **Working directory:** `<repo-root>` (repository root of the current ROCKSON checkout)
+- All commands (such as `python3 test_runner.py` and `./myc ...`) must be run from the repository root unless explicitly stated otherwise.
 - **Implementation language:** Python 3 (standard library only)
 - **Package/build manager:** none / standard `python3` / bash harness
 - **Target toolchain:** GCC (primary) / Clang (secondary)
@@ -105,7 +106,11 @@ Do not assume Docker, web services, databases, Firebase, or cloud infrastructure
 python3 test_runner.py
 ```
 
-### Required target matrix
+Runs the automated test suite using the current backend driver (`./myc`).
+
+### Required Target Matrix (Future Release Gate)
+
+The commands below represent standalone direct target-compiler invocations and target configurations required for the v0.1 release gate. Note: the current `./myc` driver hardcodes `gcc` with default flags and does not yet support flag injection or compiler selection (e.g. `CC=clang`).
 
 ```bash
 # Debug compilation
@@ -121,7 +126,7 @@ clang -std=gnu11 -Wall -Wextra <tmp.c> -lgc -o <binary>
 gcc -std=gnu11 -fsanitize=undefined -g <tmp.c> -lgc -o <binary>
 ```
 
-At minimum, compiler correctness changes should be validated in both an unoptimized and optimized target configuration where applicable.
+At minimum, compiler correctness changes should be validated in both an unoptimized and optimized target configuration once driver/runner flag selection is wired.
 
 ### Regression Rule
 

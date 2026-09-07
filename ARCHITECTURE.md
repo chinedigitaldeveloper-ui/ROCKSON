@@ -292,7 +292,7 @@ Target lowering example:
 
 ## Target Release & Soundness Gate (Milestone v0.1)
 
-> **Target Gate**: All items below must be satisfied before `myc v0.1.0` is released.
+> **Target Gate**: All items below must be satisfied before `myc v0.1.0` is released. These values are required future release conditions, not current certification results.
 
 ```text
 SOURCE UNSOUNDNESS         = NONE KNOWN
@@ -316,12 +316,14 @@ UBSAN                      = PASS
 
 ## Verification Matrix
 
-| Configuration | Target Requirement | Verification Command |
+| Configuration | Current Status | Verification |
 |---|---|---|
-| Canonical test runner | PASS | `python3 test_runner.py` |
-| GCC Debug Config (-O0) | PASS | `./myc sample.src -o sample_bin` |
-| Clang Optimized Config (-O2) | PASS | `CC=clang python3 test_runner.py` |
-| Undefined Behavior Sanitizer | PASS | `gcc -fsanitize=undefined -O2 ...` |
+| Canonical regression suite | AVAILABLE | `python3 test_runner.py` |
+| Current backend driver | AVAILABLE | `./myc sample.src -o sample_bin` — uses hardcoded GCC default flags |
+| Explicit GCC `-O0` suite | NOT YET WIRED | Requires driver/runner support for selectable compiler flags |
+| Explicit GCC `-O2` suite | NOT YET WIRED | Requires driver/runner support for selectable compiler flags |
+| Clang `-O2` suite | NOT YET WIRED | Current driver ignores `CC`; requires configurable compiler selection |
+| UBSan suite | NOT YET WIRED | Requires controlled generated-C or driver flag injection |
 
 ---
 

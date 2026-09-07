@@ -19,7 +19,8 @@
 - [ ] **P1-06: setjmp Local Preservation** — Ensure automatic variables modified in `try` blocks are declared `volatile` or lowered safely (H-02).
 - [ ] **P1-07: Symbol Mangling** — Prevent user identifiers from colliding with C keywords or generated runtime names (H-07).
 - [ ] **P1-08: Remove Codegen Semantic Re-inference** — Unify member and type resolution so backend does not re-infer or diverge from semantic analysis (H-10, H-11).
-- [ ] **Compiler Hardening** — Validate test suite across GCC `-O0`, GCC `-O2`, Clang `-O2`, and UBSan.
+- [ ] **P1-09: Contextual Type Legality** — Reject contextually invalid types and unsupported storage forms: `void` variables, fields, parameters where forbidden, and `void[]` arrays (H-05).
+- [ ] **Compiler Hardening** — Validate test suite across GCC `-O0`, GCC `-O2`, Clang `-O2`, and UBSan once driver flag selection is wired.
 
 ---
 
