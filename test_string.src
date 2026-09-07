@@ -1,0 +1,35 @@
+// RUN: success
+// EXPECT: Hello, Arthur!
+// EXPECT: Player health: 75 HP
+// EXPECT: Countdown: 10 seconds remaining
+// EXPECT: Chained: Conan level 42 with 100 HP!
+// EXPECT: Loop string: iteration_999
+int main() {
+    string greeting = "Hello, " + "Arthur!";
+    print(greeting);
+
+    int hp = 75;
+    string status = "Player health: " + hp + " HP";
+    print(status);
+
+    int sec = 10;
+    string countdown = "Countdown: " + sec + " seconds remaining";
+    print(countdown);
+
+    string name = "Conan";
+    int lvl = 42;
+    int max_hp = 100;
+    string chained = "Chained: " + name + " level " + lvl + " with " + max_hp + " HP!";
+    print(chained);
+
+    // Stress test: create 1,000 temporary strings in a loop
+    int i = 0;
+    string temp = "";
+    while (i < 1000) {
+        temp = "iteration_" + i;
+        i = i + 1;
+    }
+    print("Loop string: " + temp);
+
+    return 0;
+}

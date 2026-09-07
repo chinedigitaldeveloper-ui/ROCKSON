@@ -1,0 +1,11 @@
+// RUN: compile-fail
+// ERROR: cannot assign 'Player' to variable of type 'int'
+class Player {
+    int hp;
+}
+
+int main() {
+    Player p = new Player();
+    int number = p;
+    return 0;
+}

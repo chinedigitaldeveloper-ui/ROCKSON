@@ -1,0 +1,62 @@
+// RUN: success
+// EXPECT: Conan
+// EXPECT: Thor
+// EXPECT: Combat condition passed!
+class Entity {
+    string name;
+    int hp;
+
+    Entity(string entity_name, int initial_hp) {
+        this.name = entity_name;
+        this.hp = initial_hp;
+    }
+
+    void take_damage(int amount) {
+        this.hp = this.hp - amount;
+    }
+}
+
+class Warrior extends Entity {
+    int armor;
+
+    Warrior(string warrior_name, int initial_hp, int initial_armor) {
+        this.name = warrior_name;
+        this.hp = initial_hp;
+        this.armor = initial_armor;
+    }
+
+    void defend() {
+        this.armor = this.armor + 5;
+    }
+}
+
+int main() {
+    Warrior w = new Warrior("Conan", 100, 20);
+    print(w.name);
+    w.take_damage(30);
+    w.defend();
+
+    Entity e = w;
+    e.take_damage(20);
+
+    int[] scores = new int[3];
+    scores[0] = 88;
+    scores[1] = 92;
+    scores[2] = 99;
+
+    Warrior[] army = new Warrior[2];
+    army[0] = w;
+    army[1] = new Warrior("Thor", 150, 40);
+    print(army[1].name);
+
+    int alive = true;
+    int shielded = false;
+
+    if (alive && !shielded || w.hp <= 0) {
+        print("Combat condition passed!");
+    } else {
+        print("Combat condition failed!");
+    }
+
+    return 0;
+}

@@ -1,0 +1,7 @@
+// RUN: compile-fail
+// ERROR: Cannot import 'missing_lib.src': File not found
+import "missing_lib.src";
+
+int main() {
+    return 0;
+}

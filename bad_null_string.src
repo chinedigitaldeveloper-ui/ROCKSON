@@ -1,0 +1,6 @@
+// RUN: compile-fail
+// ERROR: cannot assign 'null' to variable of type 'string'
+int main() {
+    string s = null;
+    return 0;
+}

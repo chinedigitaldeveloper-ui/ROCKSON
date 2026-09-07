@@ -1,0 +1,2 @@
+// RUN: module
+import "circ_a.src";

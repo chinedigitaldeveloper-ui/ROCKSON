@@ -1,0 +1,13 @@
+// RUN: success
+// ARGS: hello world 42
+// EXPECT: Args count: 4
+// EXPECT: Arg 1: hello
+// EXPECT: Arg 2: world
+// EXPECT: Arg 3: 42
+int main(string[] args) {
+    print("Args count: " + args.length);
+    print("Arg 1: " + args[1]);
+    print("Arg 2: " + args[2]);
+    print("Arg 3: " + args[3]);
+    return 0;
+}

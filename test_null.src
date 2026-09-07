@@ -1,0 +1,43 @@
+// RUN: success
+// EXPECT: Target is initially null
+// EXPECT: Target created: Golem
+// EXPECT: List is null
+// EXPECT: List initialized: 42
+// EXPECT: List reset to null
+class Target {
+    string name;
+    int hp;
+
+    Target(string n, int h) {
+        this.name = n;
+        this.hp = h;
+    }
+}
+
+int main() {
+    Target t = null;
+    if (t == null) {
+        print("Target is initially null");
+    }
+
+    t = new Target("Golem", 150);
+    if (t != null) {
+        print("Target created: " + t.name);
+    }
+
+    int[] list = null;
+    if (list == null) {
+        print("List is null");
+    }
+
+    list = new int[2];
+    list[0] = 42;
+    print("List initialized: " + list[0]);
+
+    list = null;
+    if (list == null) {
+        print("List reset to null");
+    }
+
+    return 0;
+}

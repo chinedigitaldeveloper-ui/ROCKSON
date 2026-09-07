@@ -1,0 +1,540 @@
+// RUN: success
+// ARGS: test_doc.md
+// EXPECT: <h1>Showcase</h1>
+// EXPECT: <p>Testing <strong>bold</strong> and <em>italic</em>.</p>
+// EXPECT: <li>Feature A</li>
+// EXPECT: <li>Feature B</li>
+// EXPECT: <pre><code class="language-c">int x = 42;</code></pre>
+// EXPECT: <hr />
+import "lib_array.src";
+
+// ============================================================================
+// Markdown-to-HTML CLI Converter (md2html.src)
+// Demonstrates:
+// - CLI arguments & file I/O (main(string[] args), read_file, write_file)
+// - Polymorphic OOP class hierarchy (Block -> Header, Paragraph, Code, ...)
+// - Dynamic dispatch via prefix-compatible VTables
+// - Higher-order array operations and string transformations
+// - Continuous memory safety and reclamation with Boehm GC
+// ============================================================================
+
+// --- String Utilities ---
+
+int is_digit(string ch) {
+    if (ch == "0" || ch == "1" || ch == "2" || ch == "3" || ch == "4" ||
+        ch == "5" || ch == "6" || ch == "7" || ch == "8" || ch == "9") {
+        return 1;
+    }
+    return 0;
+}
+
+int starts_with(string s, string prefix) {
+    int p_len = str_len(prefix);
+    if (str_len(s) < p_len) {
+        return 0;
+    }
+    return str_sub(s, 0, p_len) == prefix;
+}
+
+string trim(string s) {
+    int len = str_len(s);
+    if (len == 0) {
+        return "";
+    }
+    int start = 0;
+    while (start < len) {
+        string c = str_sub(s, start, 1);
+        if (c == " " || c == "\t" || c == "\r" || c == "\n") {
+            start = start + 1;
+        } else {
+            break;
+        }
+    }
+    int end = len;
+    while (end > start) {
+        string c = str_sub(s, end - 1, 1);
+        if (c == " " || c == "\t" || c == "\r" || c == "\n") {
+            end = end - 1;
+        } else {
+            break;
+        }
+    }
+    return str_sub(s, start, end - start);
+}
+
+string escape_html(string s) {
+    int len = str_len(s);
+    string res = "";
+    for (int i = 0; i < len; i = i + 1) {
+        string ch = str_sub(s, i, 1);
+        if (ch == "&") {
+            res = res + "&amp;";
+        } else if (ch == "<") {
+            res = res + "&lt;";
+        } else if (ch == ">") {
+            res = res + "&gt;";
+        } else if (ch == "\"") {
+            res = res + "&quot;";
+        } else {
+            res = res + ch;
+        }
+    }
+    return res;
+}
+
+int count_lines(string text) {
+    int len = str_len(text);
+    if (len == 0) {
+        return 0;
+    }
+    int count = 1;
+    for (int i = 0; i < len; i = i + 1) {
+        if (str_sub(text, i, 1) == "\n") {
+            count = count + 1;
+        }
+    }
+    return count;
+}
+
+string[] split_lines(string text) {
+    int total = count_lines(text);
+    if (total == 0) {
+        return new string[0];
+    }
+    string[] lines = new string[total];
+    int len = str_len(text);
+    int line_idx = 0;
+    int start = 0;
+    for (int i = 0; i < len; i = i + 1) {
+        string ch = str_sub(text, i, 1);
+        if (ch == "\n") {
+            int line_len = i - start;
+            string l = str_sub(text, start, line_len);
+            int l_len = str_len(l);
+            if (l_len > 0) {
+                if (str_sub(l, l_len - 1, 1) == "\r") {
+                    l = str_sub(l, 0, l_len - 1);
+                }
+            }
+            lines[line_idx] = l;
+            line_idx = line_idx + 1;
+            start = i + 1;
+        }
+    }
+    if (line_idx < total) {
+        string last = str_sub(text, start, len - start);
+        int last_len = str_len(last);
+        if (last_len > 0) {
+            if (str_sub(last, last_len - 1, 1) == "\r") {
+                last = str_sub(last, 0, last_len - 1);
+            }
+        }
+        lines[line_idx] = last;
+    }
+    return lines;
+}
+
+// --- Inline Markdown Parser ---
+
+string render_inline(string text) {
+    int len = str_len(text);
+    string out = "";
+    int i = 0;
+
+    while (i < len) {
+        // 1. Inline Code: `...`
+        if (str_sub(text, i, 1) == "`") {
+            int close_idx = 0 - 1;
+            for (int j = i + 1; j < len; j = j + 1) {
+                if (str_sub(text, j, 1) == "`") {
+                    close_idx = j;
+                    break;
+                }
+            }
+            if (close_idx != (0 - 1)) {
+                string code_content = str_sub(text, i + 1, close_idx - i - 1);
+                out = out + "<code>" + escape_html(code_content) + "</code>";
+                i = close_idx + 1;
+                continue;
+            }
+        }
+
+        // 2. Bold: **...**
+        if (i + 1 < len && str_sub(text, i, 2) == "**") {
+            int close_idx = 0 - 1;
+            for (int j = i + 2; j + 1 < len; j = j + 1) {
+                if (str_sub(text, j, 2) == "**") {
+                    close_idx = j;
+                    break;
+                }
+            }
+            if (close_idx != (0 - 1)) {
+                string bold_content = str_sub(text, i + 2, close_idx - i - 2);
+                out = out + "<strong>" + render_inline(bold_content) + "</strong>";
+                i = close_idx + 2;
+                continue;
+            }
+        }
+
+        // 3. Italic: *...*
+        if (str_sub(text, i, 1) == "*") {
+            int close_idx = 0 - 1;
+            for (int j = i + 1; j < len; j = j + 1) {
+                if (str_sub(text, j, 1) == "*") {
+                    close_idx = j;
+                    break;
+                }
+            }
+            if (close_idx != (0 - 1)) {
+                string italic_content = str_sub(text, i + 1, close_idx - i - 1);
+                out = out + "<em>" + render_inline(italic_content) + "</em>";
+                i = close_idx + 1;
+                continue;
+            }
+        }
+
+        // 4. Links: [text](url)
+        if (str_sub(text, i, 1) == "[") {
+            int close_bracket = 0 - 1;
+            for (int j = i + 1; j < len; j = j + 1) {
+                if (str_sub(text, j, 1) == "]") {
+                    close_bracket = j;
+                    break;
+                }
+            }
+            if (close_bracket != (0 - 1) && close_bracket + 1 < len && str_sub(text, close_bracket + 1, 1) == "(") {
+                int close_paren = 0 - 1;
+                for (int k = close_bracket + 2; k < len; k = k + 1) {
+                    if (str_sub(text, k, 1) == ")") {
+                        close_paren = k;
+                        break;
+                    }
+                }
+                if (close_paren != (0 - 1)) {
+                    string link_text = str_sub(text, i + 1, close_bracket - i - 1);
+                    string link_url = str_sub(text, close_bracket + 2, close_paren - close_bracket - 2);
+                    out = out + "<a href=\"" + escape_html(link_url) + "\">" + render_inline(link_text) + "</a>";
+                    i = close_paren + 1;
+                    continue;
+                }
+            }
+        }
+
+        // 5. Default character
+        string ch = str_sub(text, i, 1);
+        if (ch == "&") {
+            out = out + "&amp;";
+        } else if (ch == "<") {
+            out = out + "&lt;";
+        } else if (ch == ">") {
+            out = out + "&gt;";
+        } else if (ch == "\"") {
+            out = out + "&quot;";
+        } else {
+            out = out + ch;
+        }
+        i = i + 1;
+    }
+
+    return out;
+}
+
+// --- Polymorphic Block Hierarchy ---
+
+class Block {
+    string to_html() {
+        return "";
+    }
+}
+
+class HeaderBlock extends Block {
+    int level;
+    string content;
+
+    HeaderBlock(int lvl, string text) {
+        this.level = lvl;
+        this.content = text;
+    }
+
+    string to_html() {
+        return "<h" + this.level + ">" + render_inline(this.content) + "</h" + this.level + ">";
+    }
+}
+
+class ParagraphBlock extends Block {
+    string content;
+
+    ParagraphBlock(string text) {
+        this.content = text;
+    }
+
+    string to_html() {
+        return "<p>" + render_inline(this.content) + "</p>";
+    }
+}
+
+class CodeBlock extends Block {
+    string lang;
+    string code;
+
+    CodeBlock(string l, string c) {
+        this.lang = l;
+        this.code = c;
+    }
+
+    string to_html() {
+        if (str_len(this.lang) > 0) {
+            return "<pre><code class=\"language-" + this.lang + "\">" + escape_html(this.code) + "</code></pre>";
+        }
+        return "<pre><code>" + escape_html(this.code) + "</code></pre>";
+    }
+}
+
+class QuoteBlock extends Block {
+    string content;
+
+    QuoteBlock(string text) {
+        this.content = text;
+    }
+
+    string to_html() {
+        return "<blockquote><p>" + render_inline(this.content) + "</p></blockquote>";
+    }
+}
+
+class ListBlock extends Block {
+    int is_ordered;
+    string[] items;
+
+    ListBlock(int ordered, string[] itms) {
+        this.is_ordered = ordered;
+        this.items = itms;
+    }
+
+    string to_html() {
+        string tag = "ul";
+        if (this.is_ordered != 0) {
+            tag = "ol";
+        }
+        string html = "<" + tag + ">\n";
+        for (int i = 0; i < this.items.length; i = i + 1) {
+            html = html + "  <li>" + render_inline(this.items[i]) + "</li>\n";
+        }
+        html = html + "</" + tag + ">";
+        return html;
+    }
+}
+
+class HorizontalRuleBlock extends Block {
+    HorizontalRuleBlock() {
+    }
+
+    string to_html() {
+        return "<hr />";
+    }
+}
+
+// --- Markdown Document Converter ---
+
+string convert_markdown(string md) {
+    string[] lines = split_lines(md);
+    int num_lines = lines.length;
+
+    Block[] blocks = new Block[num_lines + 1];
+    int block_count = 0;
+
+    int i = 0;
+    while (i < num_lines) {
+        string raw_line = lines[i];
+        string line = trim(raw_line);
+
+        // Blank lines
+        if (str_len(line) == 0) {
+            i = i + 1;
+            continue;
+        }
+
+        // 1. Fenced Code Block: ```lang
+        if (starts_with(line, "```") != 0) {
+            string lang = trim(str_sub(line, 3, str_len(line) - 3));
+            string code_content = "";
+            i = i + 1;
+            while (i < num_lines) {
+                string cur = lines[i];
+                if (starts_with(trim(cur), "```") != 0) {
+                    i = i + 1;
+                    break;
+                }
+                if (str_len(code_content) > 0) {
+                    code_content = code_content + "\n" + cur;
+                } else {
+                    code_content = cur;
+                }
+                i = i + 1;
+            }
+            blocks[block_count] = new CodeBlock(lang, code_content);
+            block_count = block_count + 1;
+            continue;
+        }
+
+        // 2. Horizontal Rule: --- or ***
+        if (line == "---" || line == "***" || line == "___") {
+            blocks[block_count] = new HorizontalRuleBlock();
+            block_count = block_count + 1;
+            i = i + 1;
+            continue;
+        }
+
+        // 3. Headers: #, ##, ###, ####, #####, ######
+        if (starts_with(line, "#") != 0) {
+            int level = 0;
+            while (level < str_len(line) && str_sub(line, level, 1) == "#") {
+                level = level + 1;
+            }
+            if (level <= 6 && level < str_len(line) && str_sub(line, level, 1) == " ") {
+                string h_content = trim(str_sub(line, level + 1, str_len(line) - level - 1));
+                blocks[block_count] = new HeaderBlock(level, h_content);
+                block_count = block_count + 1;
+                i = i + 1;
+                continue;
+            }
+        }
+
+        // 4. Blockquotes: >
+        if (starts_with(line, "> ") != 0 || line == ">") {
+            string q_content = "";
+            while (i < num_lines) {
+                string cur = trim(lines[i]);
+                if (starts_with(cur, "> ") != 0) {
+                    string part = str_sub(cur, 2, str_len(cur) - 2);
+                    if (str_len(q_content) > 0) {
+                        q_content = q_content + " " + part;
+                    } else {
+                        q_content = part;
+                    }
+                    i = i + 1;
+                } else if (cur == ">") {
+                    i = i + 1;
+                } else {
+                    break;
+                }
+            }
+            blocks[block_count] = new QuoteBlock(q_content);
+            block_count = block_count + 1;
+            continue;
+        }
+
+        // 5. Unordered List: - or *
+        if (starts_with(line, "- ") != 0 || starts_with(line, "* ") != 0) {
+            int lookahead = i;
+            int item_count = 0;
+            while (lookahead < num_lines) {
+                string cur = trim(lines[lookahead]);
+                if (starts_with(cur, "- ") != 0 || starts_with(cur, "* ") != 0) {
+                    item_count = item_count + 1;
+                    lookahead = lookahead + 1;
+                } else {
+                    break;
+                }
+            }
+            string[] items = new string[item_count];
+            for (int k = 0; k < item_count; k = k + 1) {
+                string item_line = trim(lines[i]);
+                items[k] = trim(str_sub(item_line, 2, str_len(item_line) - 2));
+                i = i + 1;
+            }
+            blocks[block_count] = new ListBlock(0, items);
+            block_count = block_count + 1;
+            continue;
+        }
+
+        // 6. Ordered List: 1. , 2. 
+        if (str_len(line) > 3 && str_sub(line, 1, 2) == ". " && is_digit(str_sub(line, 0, 1)) != 0) {
+            int lookahead = i;
+            int item_count = 0;
+            while (lookahead < num_lines) {
+                string cur = trim(lines[lookahead]);
+                if (str_len(cur) > 3 && str_sub(cur, 1, 2) == ". " && is_digit(str_sub(cur, 0, 1)) != 0) {
+                    item_count = item_count + 1;
+                    lookahead = lookahead + 1;
+                } else {
+                    break;
+                }
+            }
+            string[] items = new string[item_count];
+            for (int k = 0; k < item_count; k = k + 1) {
+                string item_line = trim(lines[i]);
+                items[k] = trim(str_sub(item_line, 3, str_len(item_line) - 3));
+                i = i + 1;
+            }
+            blocks[block_count] = new ListBlock(1, items);
+            block_count = block_count + 1;
+            continue;
+        }
+
+        // 7. Regular Paragraph
+        string p_content = "";
+        while (i < num_lines) {
+            string cur = trim(lines[i]);
+            if (str_len(cur) == 0) {
+                break;
+            }
+            if (starts_with(cur, "#") != 0 ||
+                starts_with(cur, "```") != 0 ||
+                starts_with(cur, "> ") != 0 ||
+                starts_with(cur, "- ") != 0 ||
+                starts_with(cur, "* ") != 0 ||
+                cur == "---" || cur == "***") {
+                break;
+            }
+            if (str_len(p_content) > 0) {
+                p_content = p_content + " " + cur;
+            } else {
+                p_content = cur;
+            }
+            i = i + 1;
+        }
+
+        if (str_len(p_content) > 0) {
+            blocks[block_count] = new ParagraphBlock(p_content);
+            block_count = block_count + 1;
+        }
+    }
+
+    // Dynamic polymorphic dispatch over all blocks!
+    string full_html = "";
+    for (int b = 0; b < block_count; b = b + 1) {
+        Block blk = blocks[b];
+        full_html = full_html + blk.to_html() + "\n";
+    }
+
+    return full_html;
+}
+
+// --- Entry Point ---
+
+int main(string[] args) {
+    if (args.length < 2) {
+        print("Usage: md2html <input.md> [output.html]");
+        return 1;
+    }
+
+    string in_path = args[1];
+    if (file_exists(in_path) == 0) {
+        print("Error: Input file '" + in_path + "' not found.");
+        return 1;
+    }
+
+    string content = read_file(in_path);
+    string html = convert_markdown(content);
+
+    if (args.length >= 3) {
+        string out_path = args[2];
+        write_file(out_path, html);
+        print("Converted " + in_path + " -> " + out_path);
+    } else {
+        print(html);
+    }
+
+    return 0;
+}

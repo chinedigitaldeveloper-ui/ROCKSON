@@ -1,0 +1,8 @@
+// RUN: compile-fail
+// ERROR: Cannot capture outer variable 'helper' in non-capturing lambda
+
+int main() {
+    int(int) helper = (int x) => x * 2;
+    int(int) caller = (int a) => helper(a);
+    return 0;
+}

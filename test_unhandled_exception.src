@@ -1,0 +1,6 @@
+// RUN: runtime-fail
+// ERROR: Unhandled Exception: Fatal system failure
+int main() {
+    throw "Fatal system failure";
+    return 0;
+}

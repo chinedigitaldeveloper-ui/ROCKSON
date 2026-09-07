@@ -1,0 +1,8 @@
+// RUN: compile-fail
+// ERROR: Cannot capture outer variable 'factor' in non-capturing lambda
+
+int main() {
+    int factor = 10;
+    int(int) mul = (int x) => x * factor;
+    return 0;
+}

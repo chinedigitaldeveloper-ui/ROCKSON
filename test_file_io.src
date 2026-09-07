@@ -1,0 +1,24 @@
+// RUN: success
+// EXPECT: File created successfully
+// EXPECT: File exists: 1
+// EXPECT: File content: Hello from myc standard library!
+// EXPECT: File cleaned up: 1
+int main() {
+    string path = "test_io_temp.txt";
+
+    int written = write_file(path, "Hello from myc standard library!");
+    if (written == 1) {
+        print("File created successfully");
+    }
+
+    int exists = file_exists(path);
+    print("File exists: " + exists);
+
+    string content = read_file(path);
+    print("File content: " + content);
+
+    int deleted = remove_file(path);
+    print("File cleaned up: " + deleted);
+
+    return 0;
+}

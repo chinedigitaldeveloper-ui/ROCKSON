@@ -1,0 +1,15 @@
+// RUN: success
+// EXPECT: Point A: 10, 20
+// EXPECT: Point B: 30, 40
+import "mod_a.src";
+import "mod_b.src";
+
+int main() {
+    Point pa = create_point_a();
+    print("Point A: " + pa.x + ", " + pa.y);
+
+    Point pb = create_point_b();
+    print("Point B: " + pb.x + ", " + pb.y);
+
+    return 0;
+}

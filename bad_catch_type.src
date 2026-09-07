@@ -1,0 +1,10 @@
+// RUN: compile-fail
+// ERROR: Catch parameter type must be 'string', got 'int'
+int main() {
+    try {
+        print("hello");
+    } catch (int e) {
+        print(e);
+    }
+    return 0;
+}

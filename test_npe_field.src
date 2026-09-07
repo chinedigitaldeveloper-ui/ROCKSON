@@ -1,0 +1,11 @@
+// RUN: runtime-fail
+// ERROR: NullPointerException: Cannot access field 'hp' on null reference
+class Player {
+    int hp;
+}
+
+int main() {
+    Player p = null;
+    print(p.hp);
+    return 0;
+}

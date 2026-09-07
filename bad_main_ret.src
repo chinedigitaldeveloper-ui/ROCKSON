@@ -1,0 +1,4 @@
+// RUN: compile-fail
+// ERROR: Entry point 'main' must return 'int'
+void main() {
+}

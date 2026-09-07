@@ -1,0 +1,5 @@
+// RUN: compile-fail
+// ERROR: Entry point 'main' must have signature 'int main()' or 'int main(string[] args)'
+int main(int x) {
+    return 0;
+}

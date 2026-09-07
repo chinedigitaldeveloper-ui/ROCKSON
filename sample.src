@@ -1,0 +1,29 @@
+// RUN: success
+// EXPECT: 777
+
+class Player {
+    int hp;
+
+    void heal(int amount) {
+        this.hp = this.hp - amount;
+    }
+}
+
+int main() {
+    int i = 0;
+
+    // Allocate 2,000,000 objects in a tight loop.
+    // Without GC, this would leak and grow continuously.
+    while (i < 2000000) {
+        Player temp = new Player();
+        temp.hp = i;
+        i = i + 1;
+    }
+
+    // Allocate our final survivor
+    Player survivor = new Player();
+    survivor.hp = 777;
+    print(survivor.hp);
+
+    return 0;
+}

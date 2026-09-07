@@ -1,0 +1,14 @@
+// RUN: module
+class BaseEntity {
+    string name;
+    int hp;
+
+    BaseEntity(string n, int h) {
+        this.name = n;
+        this.hp = h;
+    }
+
+    void status() {
+        print("Entity: " + this.name + " (" + this.hp + " HP)");
+    }
+}

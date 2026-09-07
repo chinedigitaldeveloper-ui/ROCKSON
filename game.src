@@ -1,0 +1,45 @@
+// RUN: success
+// EXPECT: Arthur
+// EXPECT: Status: FULL HEALTH
+// EXPECT: Status: DEFEATED
+
+class Player {
+    string name;
+    int hp;
+
+    Player(string hero_name, int initial_hp) {
+        this.name = hero_name;
+        this.hp = initial_hp;
+    }
+
+    void take_damage(int amount) {
+        this.hp = this.hp - amount;
+    }
+
+    void status() {
+        print(this.name);
+        if (this.hp <= 0) {
+            print("Status: DEFEATED");
+        } else {
+            if (this.hp == 100) {
+                print("Status: FULL HEALTH");
+            } else {
+                print("Status: IN BATTLE");
+            }
+        }
+        print(this.hp);
+    }
+}
+
+int main() {
+    Player hero = new Player("Arthur", 100);
+    hero.status();
+
+    hero.take_damage(60);
+    hero.status();
+
+    hero.take_damage(50);
+    hero.status();
+
+    return 0;
+}

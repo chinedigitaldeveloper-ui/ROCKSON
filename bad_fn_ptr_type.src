@@ -1,0 +1,10 @@
+// RUN: compile-fail
+// ERROR: cannot assign 'int(int,int)' to variable of type 'int(int)'
+int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int(int) f = add;
+    return 0;
+}

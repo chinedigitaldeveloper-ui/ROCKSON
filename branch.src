@@ -1,0 +1,30 @@
+// RUN: success
+// EXPECT: 1
+// EXPECT: 20
+
+class Player {
+    int hp;
+
+    Player(int initial_hp) {
+        this.hp = initial_hp;
+    }
+
+    void take_damage(int amount) {
+        this.hp = this.hp - amount;
+    }
+}
+
+int main() {
+    Player p = new Player(40);
+    p.take_damage(20);
+
+    // Branching test: condition is p.hp < 30
+    if (p.hp < 30) {
+        print(1); // True branch: health is low
+    } else {
+        print(0); // False branch
+    }
+
+    print(p.hp);
+    return 0;
+}

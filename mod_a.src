@@ -1,0 +1,6 @@
+// RUN: module
+import "common_point.src";
+
+Point create_point_a() {
+    return new Point(10, 20);
+}

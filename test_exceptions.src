@@ -1,0 +1,112 @@
+// RUN: success
+// EXPECT: Simple catch: Something went wrong
+// EXPECT: Unwound through deep calls: Deep failure in leaf()
+// EXPECT: Nested inner: inner error
+// EXPECT: Nested outer: rethrown inner error
+// EXPECT: Returned from try: 42
+// EXPECT: Loop break after try: 3
+// EXPECT: Loop continue after try: sum = 8
+// EXPECT: Caught from lambda: Invalid negative value: -5
+// EXPECT: GC intact after unwinding: 1
+// EXPECT: All exception tests passed!
+import "lib_array.src";
+
+void leaf() {
+    throw "Deep failure in leaf()";
+}
+
+void intermediate() {
+    // Allocate some heap memory to test GC safety across unwinding
+    string tmp = "intermediate frame string allocation";
+    leaf();
+}
+
+int try_return_helper() {
+    try {
+        return 42;
+    } catch (string err) {
+        return 0;
+    }
+}
+
+int main() {
+    // 1. Basic try/catch/throw
+    try {
+        throw "Something went wrong";
+        print("This should not print!");
+    } catch (string err) {
+        print("Simple catch: " + err);
+    }
+
+    // 2. Multi-frame stack unwinding
+    try {
+        intermediate();
+    } catch (string err) {
+        print("Unwound through deep calls: " + err);
+    }
+
+    // 3. Nested try/catch with re-throw
+    try {
+        try {
+            throw "inner error";
+        } catch (string e) {
+            print("Nested inner: " + e);
+            throw "rethrown " + e;
+        }
+    } catch (string e2) {
+        print("Nested outer: " + e2);
+    }
+
+    // 4. Returning from inside a try block
+    int ret_val = try_return_helper();
+    print("Returned from try: " + ret_val);
+
+    // 5. Break inside try within loop
+    int count = 0;
+    while (count < 10) {
+        try {
+            if (count == 3) {
+                break;
+            }
+        } catch (string e) {
+        }
+        count = count + 1;
+    }
+    print("Loop break after try: " + count);
+
+    // 6. Continue inside try within loop
+    int sum = 0;
+    for (int i = 0; i < 5; i = i + 1) {
+        try {
+            if (i == 2) {
+                continue;
+            }
+        } catch (string e) {
+        }
+        sum = sum + i;
+    }
+    print("Loop continue after try: sum = " + sum);
+
+    // 7. Exception thrown from inside a lambda
+    try {
+        int[] nums = new int[3];
+        nums[0] = 10;
+        nums[1] = -5;
+        nums[2] = 20;
+        for_each_int(nums, (int x) => {
+            if (x < 0) {
+                throw "Invalid negative value: " + x;
+            }
+        });
+    } catch (string err) {
+        print("Caught from lambda: " + err);
+    }
+
+    // 8. GC Introspection verification
+    gc_collect();
+    int heap_alive = gc_heap_size() > 0;
+    print("GC intact after unwinding: " + heap_alive);
+
+    print("All exception tests passed!");
+    return 0;
+}

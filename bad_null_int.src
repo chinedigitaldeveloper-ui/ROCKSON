@@ -1,0 +1,6 @@
+// RUN: compile-fail
+// ERROR: cannot assign 'null' to variable of type 'int'
+int main() {
+    int x = null;
+    return 0;
+}

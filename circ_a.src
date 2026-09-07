@@ -1,0 +1,7 @@
+// RUN: compile-fail
+// ERROR: Circular import detected: circ_a.src -> circ_b.src -> circ_a.src
+import "circ_b.src";
+
+int main() {
+    return 0;
+}

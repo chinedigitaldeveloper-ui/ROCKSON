@@ -1,0 +1,7 @@
+// RUN: runtime-fail
+// ERROR: NullPointerException: Cannot invoke null function pointer
+int main() {
+    int(int) fn = null;
+    fn(5);
+    return 0;
+}

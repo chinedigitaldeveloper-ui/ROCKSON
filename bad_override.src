@@ -1,0 +1,13 @@
+// RUN: compile-fail
+// ERROR: overrides parent method with incompatible parameter type
+class Entity {
+    void attack(int power) {}
+}
+
+class Warrior extends Entity {
+    void attack(string weapon) {}
+}
+
+int main() {
+    return 0;
+}

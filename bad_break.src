@@ -1,0 +1,6 @@
+// RUN: compile-fail
+// ERROR: Cannot use 'break' outside of a loop
+int main() {
+    break;
+    return 0;
+}

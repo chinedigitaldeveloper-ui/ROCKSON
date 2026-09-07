@@ -1,0 +1,99 @@
+// RUN: success
+// EXPECT: Mapped: 2, 4, 6, 8, 10
+// EXPECT: Filtered (>5): 6, 8, 10
+// EXPECT: Fold Sum: 30
+// EXPECT: Fold Product: 120
+// EXPECT: Any > 8: 1
+// EXPECT: All > 0: 1
+// EXPECT: Sliced: 4, 6
+// EXPECT: Joined: Alpha | Beta | Gamma
+import "lib_array.src";
+
+int double_it(int x) {
+    return x * 2;
+}
+
+int is_greater_than_5(int x) {
+    if (x > 5) {
+        return 1;
+    }
+    return 0;
+}
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int mul(int a, int b) {
+    return a * b;
+}
+
+int is_greater_than_8(int x) {
+    if (x > 8) {
+        return 1;
+    }
+    return 0;
+}
+
+int is_positive(int x) {
+    if (x > 0) {
+        return 1;
+    }
+    return 0;
+}
+
+string to_int_str(int[] arr) {
+    if (arr.length == 0) {
+        return "";
+    }
+    string s = "" + arr[0];
+    for (int i = 1; i < arr.length; i = i + 1) {
+        s = s + ", " + arr[i];
+    }
+    return s;
+}
+
+int main() {
+    int[] nums = new int[5];
+    nums[0] = 1;
+    nums[1] = 2;
+    nums[2] = 3;
+    nums[3] = 4;
+    nums[4] = 5;
+
+    int[] doubled = map_int(nums, double_it);
+    print("Mapped: " + to_int_str(doubled));
+
+    int[] filtered = filter_int(doubled, is_greater_than_5);
+    print("Filtered (>5): " + to_int_str(filtered));
+
+    int sum = fold_int(doubled, 0, add);
+    print("Fold Sum: " + sum);
+
+    int[] small_nums = new int[5];
+    small_nums[0] = 1;
+    small_nums[1] = 2;
+    small_nums[2] = 3;
+    small_nums[3] = 4;
+    small_nums[4] = 5;
+    int prod = fold_int(small_nums, 1, mul);
+    print("Fold Product: " + prod);
+
+    int has_big = any_int(doubled, is_greater_than_8);
+    print("Any > 8: " + has_big);
+
+    int all_pos = all_int(doubled, is_positive);
+    print("All > 0: " + all_pos);
+
+    int[] sl = slice_int(doubled, 1, 3);
+    print("Sliced: " + to_int_str(sl));
+
+    string[] words = new string[3];
+    words[0] = "Alpha";
+    words[1] = "Beta";
+    words[2] = "Gamma";
+    string joined = join_strings(words, " | ");
+    print("Joined: " + joined);
+
+    return 0;
+}

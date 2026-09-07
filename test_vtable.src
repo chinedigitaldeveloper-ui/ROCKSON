@@ -1,0 +1,52 @@
+// RUN: success
+// EXPECT: Base Entity damaged: 70
+// EXPECT: Warrior armor absorbed damage: 75
+// EXPECT: Polymorphic dispatch success!
+class Entity {
+    string name;
+    int hp;
+
+    Entity(string n, int h) {
+        this.name = n;
+        this.hp = h;
+    }
+
+    void take_damage(int amount) {
+        this.hp = this.hp - amount;
+        print("Base Entity damaged:");
+        print(this.hp);
+    }
+}
+
+class Warrior extends Entity {
+    int armor;
+
+    Warrior(string n, int h, int a) {
+        this.name = n;
+        this.hp = h;
+        this.armor = a;
+    }
+
+    // Overrides Entity.take_damage!
+    void take_damage(int amount) {
+        int reduced = amount - 5;
+        this.hp = this.hp - reduced;
+        print("Warrior armor absorbed damage:");
+        print(this.hp);
+    }
+}
+
+int main() {
+    Entity e1 = new Entity("Generic", 100);
+    e1.take_damage(30);
+
+    // Dynamic dispatch test: e2 is typed as Entity, but points to a Warrior
+    Entity e2 = new Warrior("Conan", 100, 20);
+    e2.take_damage(30);
+
+    if (e2.hp == 75) {
+        print("Polymorphic dispatch success!");
+    }
+
+    return 0;
+}

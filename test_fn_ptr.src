@@ -1,0 +1,57 @@
+// RUN: success
+// EXPECT: Direct call: 25
+// EXPECT: Reassigned call: 50
+// EXPECT: Callback result: 100
+// EXPECT: Button Clicked: Submit
+// EXPECT: Handled click on: Submit
+// EXPECT: Comparator test passed: 1
+int square(int x) {
+    return x * x;
+}
+
+int double_val(int x) {
+    return x * 2;
+}
+
+int apply(int(int) f, int val) {
+    return f(val);
+}
+
+class Button {
+    string label;
+    void(string) on_click;
+
+    Button(string lbl, void(string) handler) {
+        this.label = lbl;
+        this.on_click = handler;
+    }
+
+    void click() {
+        print("Button Clicked: " + this.label);
+        this.on_click(this.label);
+    }
+}
+
+void click_logger(string btn_name) {
+    print("Handled click on: " + btn_name);
+}
+
+int main() {
+    int(int) fn = square;
+    print("Direct call: " + fn(5));
+
+    fn = double_val;
+    print("Reassigned call: " + fn(25));
+
+    print("Callback result: " + apply(square, 10));
+
+    Button btn = new Button("Submit", click_logger);
+    btn.click();
+
+    int(int) cmp = square;
+    if (cmp != null && cmp == square) {
+        print("Comparator test passed: 1");
+    }
+
+    return 0;
+}

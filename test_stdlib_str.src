@@ -1,0 +1,23 @@
+// RUN: success
+// EXPECT: Length: 13
+// EXPECT: Substring: World
+// EXPECT: Number: 123
+// EXPECT: Sum: 143
+// EXPECT: Safe empty: 0
+int main() {
+    string s = "Hello, World!";
+    int len = str_len(s);
+    print("Length: " + len);
+
+    string sub = str_sub(s, 7, 5);
+    print("Substring: " + sub);
+
+    int n = str_to_int("123");
+    print("Number: " + n);
+    print("Sum: " + (n + 20));
+
+    string empty = str_sub(s, 100, 10);
+    print("Safe empty: " + str_len(empty));
+
+    return 0;
+}

@@ -1,0 +1,105 @@
+// RUN: success
+// EXPECT: Zero arg: 42
+// EXPECT: Binary lambda: 15
+// EXPECT: Absolute val neg: 17
+// EXPECT: Absolute val pos: 25
+// EXPECT: Squared: 1, 4, 9, 16, 25
+// EXPECT: Filtered (>2): 3, 4, 5
+// EXPECT: Fold sum: 15
+// EXPECT: Formatted: <apple>, <banana>, <cherry>
+// EXPECT: Joined: alpha::beta
+// EXPECT: Top-level call inside lambda: 49
+// EXPECT: Calculator method: 200
+import "lib_array.src";
+
+int square(int x) {
+    return x * x;
+}
+
+class Calculator {
+    int factor;
+
+    Calculator(int f) {
+        this.factor = f;
+    }
+
+    int compute(int x, int(int) op) {
+        return op(x);
+    }
+
+    int apply_scale(int val) {
+        // Calling compute with a static non-capturing lambda
+        return this.compute(val, (int x) => x * 2);
+    }
+}
+
+string to_int_str(int[] arr) {
+    if (arr.length == 0) {
+        return "";
+    }
+    string s = "" + arr[0];
+    for (int i = 1; i < arr.length; i = i + 1) {
+        s = s + ", " + arr[i];
+    }
+    return s;
+}
+
+int main() {
+    // 1. Zero-arg lambda
+    int() get_val = () => 42;
+    print("Zero arg: " + get_val());
+
+    // 2. Binary lambda
+    int(int, int) add_fn = (int a, int b) => a + b;
+    print("Binary lambda: " + add_fn(7, 8));
+
+    // 3. Block-body lambda with control flow & local variables
+    int(int) abs_fn = (int x) => {
+        if (x < 0) {
+            int neg = 0 - x;
+            return neg;
+        }
+        return x;
+    };
+    print("Absolute val neg: " + abs_fn(-17));
+    print("Absolute val pos: " + abs_fn(25));
+
+    // 4. Higher-order array operations with inline lambdas
+    int[] nums = new int[5];
+    nums[0] = 1;
+    nums[1] = 2;
+    nums[2] = 3;
+    nums[3] = 4;
+    nums[4] = 5;
+
+    int[] squared = map_int(nums, (int x) => x * x);
+    print("Squared: " + to_int_str(squared));
+
+    int[] filtered = filter_int(nums, (int x) => x > 2);
+    print("Filtered (>2): " + to_int_str(filtered));
+
+    int sum = fold_int(nums, 0, (int acc, int x) => acc + x);
+    print("Fold sum: " + sum);
+
+    // 5. String transformations with lambdas
+    string[] fruits = new string[3];
+    fruits[0] = "apple";
+    fruits[1] = "banana";
+    fruits[2] = "cherry";
+    string[] formatted = map_string(fruits, (string s) => "<" + s + ">");
+    print("Formatted: " + join_strings(formatted, ", "));
+
+    // 6. String binary lambda
+    string(string, string) join_pair = (string a, string b) => a + "::" + b;
+    print("Joined: " + join_pair("alpha", "beta"));
+
+    // 7. Calling a top-level function from inside a lambda
+    int(int) call_top = (int x) => square(x);
+    print("Top-level call inside lambda: " + call_top(7));
+
+    // 8. Lambda passed from within a class method
+    Calculator calc = new Calculator(10);
+    print("Calculator method: " + calc.apply_scale(100));
+
+    return 0;
+}

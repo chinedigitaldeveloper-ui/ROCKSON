@@ -1,0 +1,7 @@
+// RUN: compile-fail
+// ERROR: Type mismatch on 'fn': cannot assign 'int(int,int)' to variable of type 'int(int)'
+
+int main() {
+    int(int) fn = (int a, int b) => a + b;
+    return 0;
+}

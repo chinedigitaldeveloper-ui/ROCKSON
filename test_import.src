@@ -1,0 +1,35 @@
+// RUN: success
+// EXPECT: Sum: 15
+// EXPECT: Square: 25
+// EXPECT: Entity: Dragon (500 HP)
+// EXPECT: Dragon roars with power: 100
+import "lib_math.src";
+import "lib_entity.src";
+
+class Boss extends BaseEntity {
+    int power;
+
+    Boss(string n, int h, int p) {
+        this.name = n;
+        this.hp = h;
+        this.power = p;
+    }
+
+    void attack() {
+        print(this.name + " roars with power: " + this.power);
+    }
+}
+
+int main() {
+    int s = add(7, 8);
+    print("Sum: " + s);
+
+    int sq = square(5);
+    print("Square: " + sq);
+
+    Boss b = new Boss("Dragon", 500, 100);
+    b.status();
+    b.attack();
+
+    return 0;
+}

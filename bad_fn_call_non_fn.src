@@ -1,0 +1,7 @@
+// RUN: compile-fail
+// ERROR: Cannot call variable 'num' of non-function type 'int'
+int main() {
+    int num = 42;
+    num(10);
+    return 0;
+}

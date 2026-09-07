@@ -1,0 +1,11 @@
+// RUN: runtime-fail
+// ERROR: NullPointerException: Cannot invoke method 'heal' on null reference
+class Player {
+    void heal() {}
+}
+
+int main() {
+    Player p = null;
+    p.heal();
+    return 0;
+}

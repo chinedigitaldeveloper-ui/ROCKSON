@@ -1,0 +1,17 @@
+// RUN: success
+// ARGS: apple banana cherry
+// EXPECT: Arguments: apple, banana, cherry
+// EXPECT: Tagged: [apple] | [banana] | [cherry]
+import "lib_array.src";
+
+string tag(string s) {
+    return "[" + s + "]";
+}
+
+int main(string[] args) {
+    string[] user_args = slice_string(args, 1, args.length);
+    print("Arguments: " + join_strings(user_args, ", "));
+    string[] tagged = map_string(user_args, tag);
+    print("Tagged: " + join_strings(tagged, " | "));
+    return 0;
+}

@@ -1,0 +1,6 @@
+// RUN: compile-fail
+// ERROR: Cannot use 'continue' outside of a loop
+int main() {
+    continue;
+    return 0;
+}

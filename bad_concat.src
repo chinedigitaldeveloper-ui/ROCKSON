@@ -1,0 +1,9 @@
+// RUN: compile-fail
+// ERROR: Operator '+' cannot concatenate 'string' and 'Player'
+class Player {}
+
+int main() {
+    Player p = new Player();
+    string s = "Hero: " + p;
+    return 0;
+}

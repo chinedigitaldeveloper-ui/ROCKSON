@@ -1,0 +1,6 @@
+// RUN: compile-fail
+// ERROR: Function 'str_len' expected argument 'string', got 'int'
+int main() {
+    int l = str_len(123);
+    return 0;
+}

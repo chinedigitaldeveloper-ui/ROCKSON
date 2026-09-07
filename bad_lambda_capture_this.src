@@ -1,0 +1,19 @@
+// RUN: compile-fail
+// ERROR: Cannot capture outer variable 'this' in non-capturing lambda
+
+class Worker {
+    int scale;
+
+    Worker(int s) {
+        this.scale = s;
+    }
+
+    int run(int x) {
+        int(int) f = (int n) => n * this.scale;
+        return f(x);
+    }
+}
+
+int main() {
+    return 0;
+}

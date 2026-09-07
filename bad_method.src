@@ -1,0 +1,11 @@
+// RUN: compile-fail
+// ERROR: Class 'Player' and its ancestors have no method 'shoot'
+class Player {
+    int hp;
+}
+
+int main() {
+    Player p = new Player();
+    p.shoot();
+    return 0;
+}

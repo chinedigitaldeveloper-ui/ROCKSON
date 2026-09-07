@@ -1,0 +1,7 @@
+// RUN: runtime-fail
+// ERROR: NullPointerException: Cannot index null array
+int main() {
+    int[] arr = null;
+    arr[0] = 10;
+    return 0;
+}
