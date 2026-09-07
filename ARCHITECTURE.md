@@ -111,21 +111,26 @@ Native Executable Binary
 
 ## Semantic Analysis (`typechecker.py`)
 
-### Resolver & Scope Model
-- Scope representation: Stack of lexical scope dictionaries (`ScopeStack`).
-- Block isolation: Entering `then`, `else`, `while`, `for`, `try`, and `catch` blocks pushes a new lexical frame; exiting pops it.
-- Duplicates & Shadowing: Re-declaring a symbol within the *same* immediate lexical frame is rejected. Shadowing outer scopes is permitted.
+### Current Semantic Model (clean `dev` baseline)
 
-### Type System
-- Representation: String-based type identifiers for v0.1 (`int`, `string`, `void`, `ClassName`, `T[]`, `ret_t(param_t...)`), migrating to structured `Type` objects in Phase 2.
-- Function Type Invariance: For v0.1, function types are strictly invariant across both parameters and return types (`Type A == Type B`).
-- Legality: `void` is valid only as a function/method return type or constructor return type. `void` variables, `void` fields, and `void[]` array types are rejected.
-- Place / Lvalue Model:
+- **Scope representation**: Flat `current_scope` dictionary. Methods and constructors save/restore via `current_scope.copy()`. `for` statements scope their init variable via save/restore. No true block-level scope frames exist for `if`, `else`, `while`, `try`, or `catch` blocks.
+- **Block scope leakage**: Variables declared inside `if`/`while`/`try`/`catch` bodies are visible after the block exits. C-03 OPEN.
+- **Duplicate symbol rejection**: Same-scope duplicate local/parameter/field/method declarations are not consistently rejected. H-09 OPEN.
+- **Assignment targets**: No Place/lvalue validation exists. Any expression accepted by `check_expression` can appear as an assignment target, including `this`, `arr.length`, literals, and function calls. C-01, C-06 OPEN.
+- **Function-type assignability**: Parameter types are checked with covariant `is_assignable(targetParam, valueParam)` rather than invariance. C-04 OPEN.
+- **Type legality**: `void[]` passes `is_valid_type()` because the recursion accepts `void` as a base type. `void` variables are not explicitly rejected. H-05 OPEN.
+- **Definite-return analysis**: Not implemented. Non-void functions and methods can omit `return` on reachable paths without diagnostic. H-01 OPEN.
+
+### Target Semantic Model — v0.1
+
+- **Lexical ScopeStack**: Stack of lexical scope dictionaries. Entering `then`, `else`, `while`, `for`, `try`, and `catch` blocks pushes a new lexical frame; exiting pops it. Variables declared in inner blocks are invisible after exit.
+- **Duplicate rejection**: Re-declaring a symbol within the *same* immediate lexical frame is rejected. Shadowing outer scopes is permitted.
+- **Place / Lvalue Model**:
   - **Writable Places**: Identifiers (local variables, parameters excluding `this`), member access (`obj.field` where `field != "length"` and field is not a method), array elements (`arr[idx]`).
   - **Read-Only / Non-Places**: `this`, `arr.length`, literals, function calls, function symbols, binary expressions.
-
-### Control-Flow Analysis
-- Definite-Return: Non-void functions, methods, and block lambdas must terminate on all reachable control-flow paths with a `return` or `throw`.
+- **Full function-type invariance**: Both parameters and return types checked for structural equality (`Type A == Type B`).
+- **Contextual type legality**: `void` is valid only as a function/method return type. `void` variables, `void` fields, and `void[]` array types are rejected.
+- **Definite-Return**: Non-void functions, methods, and block lambdas must terminate on all reachable control-flow paths with a `return` or `throw`.
 
 ---
 
@@ -147,10 +152,20 @@ Each typed node will carry:
 
 ## Backend / Target Lowering (`codegen.py`)
 
+### Current Backend State (clean `dev` baseline)
+
 - **Target Standard**: GNU C11 (utilizing `__extension__({ ... })` and flexible array members).
-- **Evaluation Order**: Planned deterministic left-to-right expression lowering. Array indexing must evaluate receiver and index once into temporaries.
+- **Type inference**: `codegen.py` independently re-infers expression types via `infer_type()` rather than consuming resolved types from the semantic phase. H-10, M-04 OPEN.
+- **Evaluation order**: Expressions inherit the target C compiler's evaluation order. Array index expressions may be evaluated twice. H-08 OPEN.
+- **Implicit class upcasts**: Not consistently lowered through explicit `(Base*)` casts across all contexts. H-12 OPEN.
+- **Compiler driver**: `gcc <tmp.c> -lgc -o <binary>` — no `-O2`, no `-std=gnu11` flags in the driver script.
+
+### Target Backend State — v0.1
+
+- **Evaluation Order**: Deterministic left-to-right expression lowering. Array indexing evaluates receiver and index once into temporaries.
 - **Temporary Generation**: Unique compiler-generated temporaries (`gensym`).
-- **Implicit Upcasts**: Explicit C pointer casts `(Base*)` emitted whenever a `Derived` instance is supplied to a `Base` context.
+- **Implicit Upcasts**: All resolved class upcasts lowered through explicit C pointer casts `(Base*)`.
+- **No type re-inference**: Codegen consumes resolved, typed semantic information only.
 
 ---
 
@@ -160,14 +175,21 @@ Each typed node will carry:
 - Struct embedding: Single inheritance embeds the parent struct as the first member (`Base base;`), enabling zero-cost pointer upcasts.
 
 ### Virtual Dispatch & VTable ABI
+
+**Current (clean `dev` baseline):**
 - VTable Layout: Prefix-compatible static VTables with function-pointer slots.
-- **Exact-Signature Thunks (C-05 Fix)**: Overridden methods generate static adapter thunks matching the base receiver signature:
+- Overridden methods are assigned directly to parent VTable slots. When the override has a different receiver type (e.g., `Warrior*` vs `Entity*`), the function pointer may be invoked through an incompatible C function-pointer type, causing C undefined behavior. C-05 OPEN.
+
+**Target (v0.1):**
+- Generate exact-signature adapter thunks for virtual method overrides, eliminating incompatible C function pointer invocations.
+
+Target lowering example:
   ```c
   static void __thunk_Warrior_take_damage(Entity* self, int amount) {
       Warrior_take_damage((Warrior*) self, amount);
   }
   ```
-  The thunk is assigned to the VTable slot, eliminating incompatible C function pointer invocations.
+  The thunk is assigned to the VTable slot instead of the override function pointer directly.
 
 ---
 
@@ -176,15 +198,26 @@ Each typed node will carry:
 ### Memory Management
 - Backed by Boehm GC (`libgc`).
 - Pointer structures allocated via `GC_MALLOC`; pointer-free leaf data (strings) allocated via `GC_MALLOC_ATOMIC`.
-- Deterministic initialization (target):
-  - `int` → `0`
-  - `string` → `""`
-  - References (`class`, `array`, `function`) → `NULL`
+
+**Current (clean `dev` baseline):**
+- Local variables emit as uninitialized C stack values. Object fields rely on `GC_MALLOC` zero-fill but strings and scalars are not explicitly initialized. C-02 OPEN.
+
+**Target (v0.1) — Deterministic initialization:**
+- `int` → `0`
+- `string` → `""`
+- References (`class`, `array`, `function`) → `NULL`
 
 ### Arrays
+
+**Current (clean `dev` baseline):**
 - Representation: `typedef struct { int length; T data[]; } Array_T;`
-- Safety: `length` is read-only. Dynamic allocation guards against negative sizes (`size < 0`) and multiplication overflow.
-- Access: `__bounds_check(index, length)` validates indices at runtime.
+- `length` is a mutable `int` field in the generated struct. Source code can currently write `.length` directly, bypassing bounds validation. C-01 OPEN.
+- Bounds checks use stored `length`: `__bounds_check(index, length)` validates indices at runtime.
+- Negative/overflow allocation-size validation: Not implemented. `new T[size]` does not validate `size >= 0` or guard against allocation byte-size integer overflow. H-04 OPEN.
+
+**Target (v0.1):**
+- `.length` is read-only at the semantic layer (enforced by Place/lvalue model).
+- Array allocation rejects negative lengths and guards against allocation-size overflow.
 
 ### Exceptions
 - Mechanism: Frame stack with `setjmp` / `longjmp`.

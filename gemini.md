@@ -46,10 +46,10 @@ Do not assume Docker, web services, databases, Firebase, or cloud infrastructure
 ## 3. Project-Specific Compiler Context
 
 - **Source language / DSL:** `myc` (ROCKSON)
-- **Compiler entry point:** `./myc` (invokes `driver.py` / `python3 myc`)
-- **Module loader:** `ast_nodes.py` (multi-file source collection via `import` directives)
+- **Compiler entry point:** `./myc` (Python 3 script; invokes `module_loader.py`, `typechecker.py`, `codegen.py`)
+- **Module loader:** `module_loader.py` (multi-file source collection via `import` directives)
 - **Lexer:** `lexer.py`
-- **Parser / AST:** `parser.py`, `ast_nodes.py`
+- **Parser / AST:** `parser.py` (AST node dataclasses and recursive descent parser in one module)
 - **Resolver / Type checker:** `typechecker.py`
 - **Typed HIR / IR:** `NOT YET IMPLEMENTED` (Targeted for v0.2.0; currently direct AST lowering)
 - **Lowering / Codegen:** `codegen.py`
@@ -62,17 +62,17 @@ Do not assume Docker, web services, databases, Firebase, or cloud infrastructure
 
 ## 4. Architectural Constraints
 
-### Active ADRs
+### Active ADRs (canonical authority: `ARCHITECTURE.md`)
 
-| ID | Date | Decision | Rationale |
-|---|---|---|---|
-| ARCH-01 | 2026-09-07 | Lowering target GNU C11 with Boehm GC | Portable backend with automatic memory reclamation |
-| ARCH-02 | 2026-09-07 | Single-pass AST lowering without HIR (temporary) | Rapid prototyping v0.1 baseline; to be replaced by Typed HIR in v0.2 |
-| ARCH-03 | 2026-09-07 | Explicit Place/lvalue checking before codegen | Prevents compiler crashes and target UB on invalid assignment targets |
-| ARCH-04 | 2026-09-07 | Invariant function typing | Contravariant parameter subtyping deferred to avoid soundness holes |
-| ARCH-05 | 2026-09-07 | Setjmp/longjmp structured exception model | Single-threaded exception unwinding without native DWARF/SEH overhead |
-| ARCH-06 | 2026-09-07 | Exact-signature adapter thunks for virtual method overrides | Prevents incompatible function pointer invocation in VTable dispatch |
-| STR-01 | 2026-09-07 | Flat source tree with monolithic modules | Maintain existing prototype structure until Typed HIR refactor |
+| ID | Decision |
+|---|---|
+| ARCH-01 | Target GNU C11 with Boehm GC backend |
+| ARCH-02 | Enforce full function-type invariance for v0.1 |
+| ARCH-03 | Generate exact-signature adapter thunks for VTables |
+| ARCH-04 | Introduce Place/lvalue model for assignment targets |
+| ARCH-05 | Replace flat scope dictionary with lexical scope stack |
+| ARCH-06 | Deterministic default initialization for scalars/refs |
+| STR-01 | Flat root structure retained during v0.1 stabilization |
 
 ### Compiler Stage Rules
 
