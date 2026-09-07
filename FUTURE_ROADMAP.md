@@ -15,11 +15,12 @@
 - [ ] **P1-02: Safe Array Allocation** — Validate `length >= 0` and guard against allocation byte-size integer overflow in `NewArrayExpr` (H-04).
 - [ ] **P1-03: Single-Evaluation Array Indexing** — Lower array indexing expressions through temporaries to evaluate side-effecting indices exactly once (H-08).
 - [ ] **P1-04: Single-Constructor Restriction** — Explicitly reject multiple constructors per class until constructor overloading is supported (H-06).
-- [ ] **P1-05: Division-by-Zero Trapping** — Guard integer division and modulo against division-by-zero (H-03).
+- [ ] **P1-05: Signed Arithmetic & Division Safety** — Guard integer arithmetic against undefined behavior, including division and modulo by zero, INT_MIN / -1 overflow, and signed overflow in `+`, `-`, and `*` (H-03).
 - [ ] **P1-06: setjmp Local Preservation** — Ensure automatic variables modified in `try` blocks are declared `volatile` or lowered safely (H-02).
 - [ ] **P1-07: Symbol Mangling** — Prevent user identifiers from colliding with C keywords or generated runtime names (H-07).
 - [ ] **P1-08: Remove Codegen Semantic Re-inference** — Unify member and type resolution so backend does not re-infer or diverge from semantic analysis (H-10, H-11).
 - [ ] **P1-09: Contextual Type Legality** — Reject contextually invalid types and unsupported storage forms: `void` variables, fields, parameters where forbidden, and `void[]` arrays (H-05).
+- [ ] **P1-10: Consistent Implicit Upcasting** — Emit consistent explicit upcasts for class arguments and return values to prevent incompatible pointer lowering in C (H-12).
 - [ ] **Compiler Hardening** — Validate test suite across GCC `-O0`, GCC `-O2`, Clang `-O2`, and UBSan once driver flag selection is wired.
 
 ---

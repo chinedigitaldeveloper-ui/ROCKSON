@@ -238,7 +238,8 @@ Target lowering example:
 | Non-void functions return/throw on all paths | **NOT MET** (H-01 open) | PASS | `bad_missing_return.src`, `bad_partial_return.src` |
 | Array allocation rejects negative/overflow lengths | **NOT MET** (H-04 open) | PASS | `test_negative_array_size.src`, `test_huge_array_size.src` |
 | Array indexing evaluates index expressions exactly once | **NOT MET** (H-08 open) | PASS | `test_index_eval_once.src` |
-| Integer division by zero is safely trapped | **NOT MET** (H-03 open) | PASS | `test_div_zero.src` |
+| Integer arithmetic avoids target C UB (div/mod-by-zero, INT_MIN / -1, signed overflow) | **NOT MET** (H-03 open) | PASS | `test_div_zero.src`, `test_int_overflow.src` |
+| Implicit class upcasts emit explicit C pointer conversions | **NOT MET** (H-12 open) | PASS | `test_implicit_upcast.src` |
 | Backend does not repeat semantic name resolution | **NOT MET** (H-10, M-04 open) | PASS | Architecture & code review |
 
 ---

@@ -30,13 +30,14 @@
 - [ ] Add negative-length and size-overflow validation to array allocations (H-04)
 - [ ] Lower array indexing with unique temporaries to evaluate index expressions once (H-08)
 - [ ] Reject multiple constructors per class with clear diagnostic (H-06)
-- [ ] Guard integer division and modulo against division-by-zero (H-03)
+- [ ] Guard integer arithmetic against undefined behavior, including division and modulo by zero, INT_MIN / -1, and signed overflow in `+`, `-`, and `*` (H-03)
 - [ ] Add volatile annotations or explicit frame propagation for setjmp-clobbered locals (H-02)
 - [ ] Implement symbol mangling for user identifiers colliding with C keywords (H-07)
 - [ ] Align member resolution order between TypeChecker and CodeGenerator (H-10, H-11)
+- [ ] Remove independent type inference and semantic re-resolution from codegen.py (H-10, H-11, M-04)
 - [ ] Emit consistent implicit upcasts for class arguments and returns (H-12)
 - [ ] Reject contextually invalid types and unsupported storage forms, including `void` variables, fields, parameters where forbidden, `void[]`, and unsupported function-array/storage forms (H-05)
-- [ ] Add regression tests: bad_missing_return.src, bad_partial_return.src, test_negative_array_size.src, test_huge_array_size.src, test_index_eval_once.src, test_setjmp_modified_local.src
+- [ ] Add regression tests: bad_missing_return.src, bad_partial_return.src, test_negative_array_size.src, test_huge_array_size.src, test_index_eval_once.src, test_setjmp_modified_local.src, test_div_zero.src, test_int_overflow.src, test_implicit_upcast.src
 - [ ] Add regression tests: bad_void_variable.src, bad_void_field.src, bad_void_array.src, bad_void_param.src
 
 ---
@@ -44,7 +45,6 @@
 ## P2 — Later / Backlog
 - [ ] Design structured Type object hierarchy replacing string type names
 - [ ] Implement Typed HIR intermediate representation between TypeChecker and CodeGenerator
-- [ ] Remove independent type inference from codegen.py
 - [ ] Decode string escape sequences in lexer/frontend
 - [ ] Configure CI test matrix for GCC/Clang with UBSan
 
