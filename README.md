@@ -51,7 +51,7 @@ CodeGenerator (codegen.py)
           │
           ▼
 GCC / Clang Backend Driver
-  gcc -O2 source.tmp.c -lgc -o binary
+  gcc source.tmp.c -lgc -o binary
           │
           ▼
 Native Executable Binary
@@ -153,8 +153,8 @@ python3 test_runner.py
 ```
 
 - Current test suites: **46 automated test suites** (53 `.src` files: 46 runnable, 7 reusable modules).
-- Backend compiler configuration: GCC `-O2`.
-- Target release gate: GCC & Clang at `-O0` and `-O2` with UBSan.
+- Current backend driver: GCC with no explicit optimization or language-standard flags.
+- Target verification: GCC/Clang at -O0 and -O2 plus UBSan.
 
 ---
 
@@ -165,4 +165,4 @@ feature/* → dev → PR → main
 ```
 
 - Never push directly to `main`.
-- Development and planning documentation follow `SOLO_DEV_WORKFLOW.md`.
+- Development and planning documentation follow `dev-templates@dev/SOLO_DEV_WORKFLOW.md`.

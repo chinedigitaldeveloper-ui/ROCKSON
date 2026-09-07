@@ -2,7 +2,7 @@
 
 > Auto-read by GeminiCLI and Antigravity agents. Git-versioned. Update every sprint.
 > Role: **Fixer / Polisher** — diagnostics, formatting, straightforward compiler/test issues ONLY unless explicitly authorized.
-> Generic multi-agent rules live in `agent/MULTI-AGENT-WORKFLOW.md`.
+> Generic multi-agent rules live in `dev-templates@dev/agent/MULTI-AGENT-WORKFLOW.md`.
 
 ---
 
@@ -174,13 +174,32 @@ Never auto-push. Never fabricate verification.
 
 ## 10. Canonical References
 
-Read before making architecture-sensitive changes:
+### Canonical Blueprint Repository
 
-- `guides/BLUEPRINT_GUIDE.md`
-- `SOLO_DEV_WORKFLOW.md`
-- `templates/ARCHITECTURE.compiler.template.md`
-- `templates/STRUCTURE.compiler.template.md`
-- project `ARCHITECTURE.md`
-- project `TODO.md`
+```text
+Repository: chinedigitaldeveloper-ui/dev-templates
+Branch: dev
+```
 
-If a required canonical file is missing or incompatible, report `BLUEPRINT_DRIFT` and stop the affected planning/architecture work.
+Central blueprint files (read from central repository before making architecture-sensitive changes):
+- `dev-templates@dev/agent/MULTI-AGENT-WORKFLOW.md`
+- `dev-templates@dev/guides/BLUEPRINT_GUIDE.md`
+- `dev-templates@dev/SOLO_DEV_WORKFLOW.md`
+- `dev-templates@dev/templates/ARCHITECTURE.compiler.template.md`
+- `dev-templates@dev/templates/STRUCTURE.compiler.template.md`
+
+### Project-Local Planning Files
+- `ARCHITECTURE.md`
+- `TODO.md`
+- `FUTURE_ROADMAP.md`
+- `gemini.md`
+
+### Blueprint Drift Policy
+
+The `BLUEPRINT_DRIFT` rule strictly distinguishes central canonical sources from project-local files:
+
+```text
+CENTRAL_CANONICAL_SOURCE != PROJECT_LOCAL_FILE
+```
+
+Do not require central `dev-templates` template files to physically exist inside ROCKSON. If a required central canonical reference is missing or incompatible in the upstream repository, report `BLUEPRINT_DRIFT` and stop the affected planning/architecture work.

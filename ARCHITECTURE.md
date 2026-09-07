@@ -4,7 +4,7 @@
 > Reviewed by: Rockson
 > Last updated: 2026-09-07
 > Project type: Compiler / language tooling
-> Structure reference: `templates/STRUCTURE.compiler.template.md`
+> Structure reference: `dev-templates@dev/templates/STRUCTURE.compiler.template.md`
 
 ---
 
@@ -34,7 +34,7 @@ The target release is `myc v0.1.0-soundness`. Every program accepted by semantic
 
 ### Current Pipeline
 ```text
-myc Source (.src) → ModuleLoader → Lexer → Parser (AST) → TypeChecker → CodeGenerator (reinfers types) → GCC (-O2) → Binary
+myc Source (.src) → ModuleLoader → Lexer → Parser (AST) → TypeChecker → CodeGenerator (reinfers types) → GCC (default driver flags) → Binary
 ```
 
 ### Target Pipeline Architecture
@@ -254,7 +254,7 @@ Target lowering example:
 
 ## Project Structure
 
-> Canonical reference: `templates/STRUCTURE.compiler.template.md`.
+> Canonical reference: `dev-templates@dev/templates/STRUCTURE.compiler.template.md`.
 > Active Structure Decision: **STR-01** (flat repository root retained during v0.1 stabilization).
 
 ### Layer Ownership
@@ -327,8 +327,8 @@ UBSAN                      = PASS
 
 ## Constraints
 
-- Planning docs and architecture changes follow `guides/BLUEPRINT_GUIDE.md`.
-- Branch/approval flow follows `SOLO_DEV_WORKFLOW.md`.
+- Planning docs and architecture changes follow `dev-templates@dev/guides/BLUEPRINT_GUIDE.md`.
+- Branch/approval flow follows `dev-templates@dev/SOLO_DEV_WORKFLOW.md`.
 - Source-language safety claims MUST match implemented and verified invariants.
 - Unsupported language constructs MUST be rejected cleanly rather than delegated accidentally to the target compiler.
 - Generated target code MUST be tested under optimization, not only debug builds.

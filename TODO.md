@@ -12,7 +12,7 @@
 ## P0 — Must ship now
 - [ ] [TODAY] Run `/graphify .` on repo root and commit `graphify-out/` to dev branch
 - [ ] [TODAY] Run `graphify hook install` — enables free AST auto-rebuild on every git commit
-- [ ] [TODAY] Copy `guides/GRAPHIFY.skill.md` → `.agents/skills/graphify/ORG_RULES.md` in this repo
+- [ ] [TODAY] Copy `dev-templates@dev/guides/GRAPHIFY.skill.md` → `.agents/skills/graphify/ORG_RULES.md` in this repo
 - [ ] Add Place/lvalue validation and make array.length and this non-assignable (C-01, C-06)
 - [ ] Replace flat semantic scope tracking with lexical scope frames (C-03, H-09)
 - [ ] Add deterministic defaults for uninitialized locals and strings (C-02)
